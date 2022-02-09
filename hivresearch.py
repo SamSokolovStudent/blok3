@@ -1,4 +1,5 @@
 import sys
+import matplotlib.pyplot as plt
 
 
 class GenericSequence:
@@ -45,21 +46,27 @@ class NucleotideSequence(GenericSequence):
             gc_percentage_list.append(gc_percentage)
         return gc_percentage_list
 
-    def get_gc(self):
+    def get_gc_list(self):
         return self._gc_percentage_list
 
 
 def file_obtaining():
-    file_list = sys.argv[1:]
+    # file_list = sys.argv[1:1]
+    file_list = ["hiv1completerecord.fasta"]
     for element in file_list:
         with open(element) as current_opened_file:
-            sequence_dictionary(current_opened_file)
+            file_parser(current_opened_file, element)
+            return element
 
 
-def sequence_dictionary(file):
+def file_parser(file, file_name):
+    _sequence_dictionary = sequence_dictionary_maker(file)
+    object_name = object_maker(_sequence_dictionary, file_name)
+    graph_constructor(object_name)
+
+
+def sequence_dictionary_maker(file):
     _sequence_dict = {}
-    current_value = ""
-    header_checkpoint = False
     while True:
         line = file.readline()
         if not line:
@@ -74,12 +81,25 @@ def sequence_dictionary(file):
                 _sequence_dict["sequence"] = line
         elif line.startswith(">"):
             if _sequence_dict["header"]:
-
+                return _sequence_dict
             else:
                 _sequence_dict["header"] = line
-            header_checkpoint = True
 
 
+def object_maker(sequence_dictionary, file_name):
+    object_name = file_name
+    object_name.NucleotideSequence(sequence_dictionary)
+    return object_name
+
+
+def graph_constructor(object_name):
+    plot_gc_data = object_name.get_gc_list()
+    plt.figure()
+    plt.plot([plot_gc_data], [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+             'ro')
+    plt.xlabel("Nucleotides per 10k")
+    plt.ylabel("Amount of GC%")
+    plt.title("Distribution of GC% per 10k BP")
 
 
 def main():
